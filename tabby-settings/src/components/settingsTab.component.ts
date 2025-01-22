@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker'
 import * as yaml from 'js-yaml'
 import { debounce } from 'utils-decorators/dist/esm/debounce/debounce'
-import { Component, Inject, Input, HostBinding, NgZone } from '@angular/core'
+import { Component, Inject, Input, HostBinding, Injector } from '@angular/core'
 import {
     ConfigService,
     BaseTabComponent,
@@ -22,9 +23,9 @@ import { ReleaseNotesComponent } from './releaseNotesTab.component'
 /** @hidden */
 @Component({
     selector: 'settings-tab',
-    template: require('./settingsTab.component.pug'),
-    styles: [
-        require('./settingsTab.component.scss'),
+    templateUrl: './settingsTab.component.pug',
+    styleUrls: [
+        './settingsTab.component.scss',
     ],
 })
 export class SettingsTabComponent extends BaseTabComponent {
@@ -36,6 +37,7 @@ export class SettingsTabComponent extends BaseTabComponent {
     checkingForUpdate = false
     updateAvailable = false
     showConfigDefaults = false
+    allLanguages = LocaleService.allLanguages
     @HostBinding('class.pad-window-controls') padWindowControls = false
 
     constructor (
@@ -44,15 +46,15 @@ export class SettingsTabComponent extends BaseTabComponent {
         public hostWindow: HostWindowService,
         public homeBase: HomeBaseService,
         public platform: PlatformService,
-        public zone: NgZone,
         public locale: LocaleService,
-        private updater: UpdaterService,
+        public updater: UpdaterService,
         private app: AppService,
         @Inject(SettingsTabProvider) public settingsProviders: SettingsTabProvider[],
         translate: TranslateService,
+        injector: Injector,
     ) {
-        super()
-        this.setTitle(translate.instant('Settings'))
+        super(injector)
+        this.setTitle(translate.instant(_('Settings')))
         this.settingsProviders = config.enabledServices(this.settingsProviders)
         this.settingsProviders = this.settingsProviders.filter(x => !!x.getComponentType())
         this.settingsProviders.sort((a, b) => a.weight - b.weight + a.title.localeCompare(b.title))
@@ -112,7 +114,7 @@ export class SettingsTabComponent extends BaseTabComponent {
         try {
             yaml.load(this.configFile)
             return true
-        } catch (_) {
+        } catch {
             return false
         }
     }
