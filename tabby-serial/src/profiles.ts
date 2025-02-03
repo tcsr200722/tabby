@@ -1,18 +1,17 @@
+import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker'
 import slugify from 'slugify'
-import SerialPort from 'serialport'
-import WSABinding from 'serialport-binding-webserialapi'
 import deepClone from 'clone-deep'
 import { Injectable } from '@angular/core'
-import { ProfileProvider, NewTabParameters, SelectorService, HostAppService, Platform, TranslateService } from 'tabby-core'
+import { NewTabParameters, SelectorService, HostAppService, Platform, TranslateService, ConnectableProfileProvider } from 'tabby-core'
 import { SerialProfileSettingsComponent } from './components/serialProfileSettings.component'
 import { SerialTabComponent } from './components/serialTab.component'
 import { SerialService } from './services/serial.service'
 import { BAUD_RATES, SerialProfile } from './api'
 
 @Injectable({ providedIn: 'root' })
-export class SerialProfilesService extends ProfileProvider<SerialProfile> {
+export class SerialProfilesService extends ConnectableProfileProvider<SerialProfile> {
     id = 'serial'
-    name = this.translate.instant('Serial')
+    name = _('Serial')
     settingsComponent = SerialProfileSettingsComponent
     configDefaults = {
         options: {
@@ -31,7 +30,9 @@ export class SerialProfilesService extends ProfileProvider<SerialProfile> {
             outputNewlines: null,
             scripts: [],
             slowSend: false,
+            input: { backspace: 'backspace' },
         },
+        clearServiceMessagesOnConnect: false,
     }
 
     constructor (
@@ -41,9 +42,6 @@ export class SerialProfilesService extends ProfileProvider<SerialProfile> {
         private translate: TranslateService,
     ) {
         super()
-        if (hostApp.platform === Platform.Web) {
-            SerialPort.Binding = WSABinding
-        }
     }
 
     async getBuiltinProfiles (): Promise<SerialProfile[]> {
